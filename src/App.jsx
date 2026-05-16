@@ -4,34 +4,35 @@ const PHONE = "tel:+353874099266";
 const PHONE_DISPLAY = "087 409 9266";
 const WA = "https://wa.me/353874099266";
 
-// Palette
+// Palette — Tech/SaaS (from website color code guide)
 const C = {
-  bg:      "#F0EBD8",
-  surface: "#E6DFCA",
-  border:  "#D4CDB8",
-  text:    "#1A2B18",
-  muted:   "#7A8B6A",
-  accent:  "#2D5535",
-  accentL: "#3D7248",
+  bg:      "#F5F8FF",
+  surface: "#EEF3FB",
+  border:  "#C8D8EF",
+  text:    "#0D1F3C",
+  muted:   "#5B7299",
+  accent:  "#2174B1",
+  accentL: "#3A8FD4",
+  orange:  "#FF9900",
 };
 
 const Logo = ({ scale = 1 }) => (
   <svg viewBox="0 0 220 65" width={220 * scale} height={65 * scale}>
-    <path d="M 28,3 L 51,14 L 51,41 L 28,62 L 5,41 L 5,14 Z" fill="#234b34" />
-    <path d="M 28,9 L 46,18 L 46,39 L 28,56 L 10,39 L 10,18 Z" fill="#f4efe2" />
+    <path d="M 28,3 L 51,14 L 51,41 L 28,62 L 5,41 L 5,14 Z" fill="#2174B1" />
+    <path d="M 28,9 L 46,18 L 46,39 L 28,56 L 10,39 L 10,18 Z" fill="#FFFFFF" />
     <text x="19" y="36" textAnchor="middle"
       fontFamily="'Arial Black','DM Sans',system-ui,sans-serif"
-      fontWeight="900" fontSize="22" fill="#234b34">d</text>
+      fontWeight="900" fontSize="22" fill="#2174B1">d</text>
     <text x="28" y="36" textAnchor="middle"
       fontFamily="'Arial Black','DM Sans',system-ui,sans-serif"
-      fontWeight="900" fontSize="22" fill="#234b34">g</text>
+      fontWeight="900" fontSize="22" fill="#2174B1">g</text>
     <text x="37" y="36" textAnchor="middle"
       fontFamily="'Arial Black','DM Sans',system-ui,sans-serif"
-      fontWeight="900" fontSize="22" fill="#234b34">d</text>
+      fontWeight="900" fontSize="22" fill="#2174B1">d</text>
     <line x1="67" y1="16" x2="67" y2="49" stroke={C.border} strokeWidth="1.2"/>
-    <text x="77" y="28" fontFamily="Georgia,serif" fontSize="8.5" fill={C.muted} letterSpacing="2.2">DUBLIN</text>
+    <text x="77" y="28" fontFamily="Georgia,serif" fontSize="8.5" fill={C.muted} letterSpacing="2.2">DIGITAL</text>
     <text x="77" y="39" fontFamily="Georgia,serif" fontSize="8.5" fill={C.muted} letterSpacing="2.2">GROWTH</text>
-    <text x="77" y="50" fontFamily="Georgia,serif" fontWeight="700" fontSize="8.5" fill="#234b34" letterSpacing="2.2">DIGITAL</text>
+    <text x="77" y="50" fontFamily="Georgia,serif" fontWeight="700" fontSize="8.5" fill="#2174B1" letterSpacing="2.2">DESIGN</text>
   </svg>
 );
 
@@ -86,7 +87,7 @@ export default function App() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        ::selection { background: #2D553530; }
+        ::selection { background: #2174B130; }
         a { color: inherit; text-decoration: none; }
 
         .pill {
@@ -154,7 +155,7 @@ export default function App() {
         <div style={{ position: "relative", zIndex: 1, maxWidth: 860 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28, opacity: 0, animation: "fadeUp .6s ease .1s forwards" }}>
             <div style={{ width: 28, height: 1.5, background: C.accent }}/>
-            <span style={{ fontSize: 11, letterSpacing: 4, color: C.accent, fontWeight: 500 }}>DUBLIN GROWTH DIGITAL</span>
+            <span style={{ fontSize: 11, letterSpacing: 4, color: C.accent, fontWeight: 500 }}>DIGITAL GROWTH DESIGN</span>
           </div>
 
           <h1 style={{ fontFamily: "'DM Serif Display',serif", fontWeight: 900, lineHeight: 1.04, letterSpacing: "-2px", marginBottom: 28, opacity: 0, animation: "fadeUp .7s ease .18s forwards" }}>
@@ -312,7 +313,7 @@ export default function App() {
       <footer style={{ padding: "32px 48px", borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20 }}>
         <Logo scale={.68} />
         <div style={{ display: "flex", gap: 32 }}>
-          {["Dublin Growth Digital", "dgd.ie", "© 2025"].map(t => (
+          {["Digital Growth Design", "dgd.ie", "© 2025"].map(t => (
             <span key={t} style={{ fontSize: 10, color: C.border, letterSpacing: 1.5 }}>{t.toUpperCase()}</span>
           ))}
         </div>
