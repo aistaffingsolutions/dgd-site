@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, Suspense, Component } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, Environment } from "@react-three/drei";
+import { Float } from "@react-three/drei";
 import * as THREE from "three";
 
 class ErrorBoundary extends Component {
@@ -39,15 +39,19 @@ function HeroScene() {
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
+    const mx = state.mouse.x;
+    const my = state.mouse.y;
     if (groupRef.current) {
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, state.mouse.y * -0.12, 0.03);
-      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, state.mouse.x * 0.18, 0.03);
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, my * -0.55, 0.08);
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, mx * 0.65, 0.08);
     }
     if (sphereRef.current) sphereRef.current.rotation.y = t * 0.1;
     if (wireRef.current) { wireRef.current.rotation.y = t * 0.07; wireRef.current.rotation.x = t * 0.04; }
-    if (ring1Ref.current) ring1Ref.current.rotation.z = t * 0.38;
-    if (ring2Ref.current) ring2Ref.current.rotation.x = t * -0.28;
-    if (ring3Ref.current) { ring3Ref.current.rotation.y = t * 0.22; ring3Ref.current.rotation.z = t * 0.09; }
+    // Rings speed up/slow down slightly with mouse for extra interactivity
+    const speed = 1 + Math.abs(mx) * 0.4;
+    if (ring1Ref.current) ring1Ref.current.rotation.z = t * 0.38 * speed;
+    if (ring2Ref.current) ring2Ref.current.rotation.x = t * -0.28 * speed;
+    if (ring3Ref.current) { ring3Ref.current.rotation.y = t * 0.22 * speed; ring3Ref.current.rotation.z = t * 0.09; }
     accentRefs.forEach((r, i) => {
       if (r.current) { r.current.rotation.x = t * (0.4 + i * 0.15); r.current.rotation.y = t * (0.3 + i * 0.1); }
     });
@@ -63,7 +67,7 @@ function HeroScene() {
   return (
     <group ref={groupRef} position={[2.6, 0.1, 0]}>
       <Float speed={0.7} floatIntensity={0.35} rotationIntensity={0}>
-        {/* Sharp chrome sphere — no distortion */}
+        {/* Sharp chrome sphere */}
         <mesh ref={sphereRef}>
           <sphereGeometry args={[1.45, 96, 96]} />
           <meshPhysicalMaterial
@@ -322,7 +326,6 @@ export default function App() {
               <pointLight position={[-5, -2, -2]} intensity={1.2} color="#2174B1" />
               <pointLight position={[0, -5, 4]} intensity={0.8} color="#FF9900" />
               <Suspense fallback={null}>
-                <Environment preset="studio" />
                 <HeroScene />
               </Suspense>
               <StarField />
