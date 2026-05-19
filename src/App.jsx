@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, Suspense, Component } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, MeshDistortMaterial, Environment } from "@react-three/drei";
+import { Float, Environment } from "@react-three/drei";
 import * as THREE from "three";
 
 class ErrorBoundary extends Component {
@@ -28,55 +28,85 @@ const C = {
 
 // ─── 3D Components ────────────────────────────────────────────────────────────
 
-function FloatingBlob() {
-  const meshRef = useRef();
+function HeroScene() {
+  const groupRef = useRef();
+  const sphereRef = useRef();
+  const wireRef = useRef();
   const ring1Ref = useRef();
   const ring2Ref = useRef();
+  const ring3Ref = useRef();
+  const accentRefs = [useRef(), useRef(), useRef(), useRef()];
 
   useFrame((state) => {
-    if (!meshRef.current) return;
-    meshRef.current.rotation.x = THREE.MathUtils.lerp(
-      meshRef.current.rotation.x, state.mouse.y * -0.25, 0.04
-    );
-    meshRef.current.rotation.y = THREE.MathUtils.lerp(
-      meshRef.current.rotation.y, state.mouse.x * 0.4, 0.04
-    );
-    if (ring1Ref.current) {
-      ring1Ref.current.rotation.z += 0.003;
-      ring1Ref.current.rotation.x = Math.PI / 2.5 + Math.sin(state.clock.elapsedTime * 0.4) * 0.15;
+    const t = state.clock.elapsedTime;
+    if (groupRef.current) {
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, state.mouse.y * -0.12, 0.03);
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, state.mouse.x * 0.18, 0.03);
     }
-    if (ring2Ref.current) ring2Ref.current.rotation.z -= 0.002;
+    if (sphereRef.current) sphereRef.current.rotation.y = t * 0.1;
+    if (wireRef.current) { wireRef.current.rotation.y = t * 0.07; wireRef.current.rotation.x = t * 0.04; }
+    if (ring1Ref.current) ring1Ref.current.rotation.z = t * 0.38;
+    if (ring2Ref.current) ring2Ref.current.rotation.x = t * -0.28;
+    if (ring3Ref.current) { ring3Ref.current.rotation.y = t * 0.22; ring3Ref.current.rotation.z = t * 0.09; }
+    accentRefs.forEach((r, i) => {
+      if (r.current) { r.current.rotation.x = t * (0.4 + i * 0.15); r.current.rotation.y = t * (0.3 + i * 0.1); }
+    });
   });
 
+  const accents = [
+    { pos: [-3.0, 1.7, -0.8], color: "#FF9900", s: 0.13 },
+    { pos: [2.2, -2.0, 0.6], color: "#3A9FD8", s: 0.09 },
+    { pos: [-2.2, -1.6, 1.2], color: "#2174B1", s: 0.08 },
+    { pos: [1.6, 2.4, -0.6], color: "#FF9900", s: 0.07 },
+  ];
+
   return (
-    <group position={[2.8, 0.2, 0]}>
-      <Float speed={1.4} rotationIntensity={0.3} floatIntensity={0.7}>
-        <mesh ref={meshRef}>
-          <icosahedronGeometry args={[1.5, 20]} />
-          <MeshDistortMaterial
-            color="#2174B1"
-            roughness={0.05}
-            metalness={0.9}
-            distort={0.28}
-            speed={1.5}
-            envMapIntensity={2}
-            emissive="#0D3A6A"
-            emissiveIntensity={0.4}
+    <group ref={groupRef} position={[2.6, 0.1, 0]}>
+      <Float speed={0.7} floatIntensity={0.35} rotationIntensity={0}>
+        {/* Sharp chrome sphere — no distortion */}
+        <mesh ref={sphereRef}>
+          <sphereGeometry args={[1.45, 96, 96]} />
+          <meshPhysicalMaterial
+            color="#0b1e38"
+            metalness={1}
+            roughness={0.03}
+            envMapIntensity={3}
+            emissive="#050f1e"
+            emissiveIntensity={0.5}
           />
         </mesh>
+        {/* Digital grid overlay */}
+        <mesh ref={wireRef}>
+          <sphereGeometry args={[1.49, 20, 16]} />
+          <meshBasicMaterial color="#2174B1" wireframe transparent opacity={0.1} />
+        </mesh>
       </Float>
-      <mesh ref={ring1Ref}>
-        <torusGeometry args={[2.25, 0.007, 2, 128]} />
-        <meshStandardMaterial color="#3A9FD8" transparent opacity={0.4} />
+
+      {/* Gyroscope ring 1 — equatorial blue */}
+      <mesh ref={ring1Ref} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[2.05, 0.014, 3, 200]} />
+        <meshStandardMaterial color="#3A9FD8" emissive="#3A9FD8" emissiveIntensity={0.6} transparent opacity={0.8} />
       </mesh>
-      <mesh ref={ring2Ref} rotation={[Math.PI / 4, 0, Math.PI / 5]}>
-        <torusGeometry args={[2.9, 0.004, 2, 128]} />
-        <meshStandardMaterial color="#FF9900" transparent opacity={0.2} />
+
+      {/* Gyroscope ring 2 — tilted accent */}
+      <mesh ref={ring2Ref} rotation={[Math.PI / 3.5, Math.PI / 5, 0]}>
+        <torusGeometry args={[2.55, 0.009, 3, 200]} />
+        <meshStandardMaterial color="#2174B1" emissive="#2174B1" emissiveIntensity={0.4} transparent opacity={0.55} />
       </mesh>
-      <mesh position={[-4, 2, -3]}>
-        <sphereGeometry args={[0.25, 16, 16]} />
-        <meshStandardMaterial color="#FF9900" emissive="#FF9900" emissiveIntensity={2} roughness={0} />
+
+      {/* Gyroscope ring 3 — orange outer orbit */}
+      <mesh ref={ring3Ref} rotation={[0, Math.PI / 4, Math.PI / 5]}>
+        <torusGeometry args={[3.05, 0.005, 3, 200]} />
+        <meshStandardMaterial color="#FF9900" emissive="#FF9900" emissiveIntensity={0.5} transparent opacity={0.35} />
       </mesh>
+
+      {/* Floating accent diamonds */}
+      {accents.map((a, i) => (
+        <mesh key={i} ref={accentRefs[i]} position={a.pos}>
+          <octahedronGeometry args={[a.s, 0]} />
+          <meshStandardMaterial color={a.color} emissive={a.color} emissiveIntensity={2} roughness={0} />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -282,17 +312,18 @@ export default function App() {
         <ErrorBoundary fallback={null}>
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
             <Canvas
-              camera={{ position: [0, 0, 6], fov: 65 }}
-              gl={{ powerPreference: "high-performance", antialias: false, stencil: false, alpha: true }}
-              dpr={[1, 1.5]}
+              camera={{ position: [0, 0, 6], fov: 62 }}
+              gl={{ powerPreference: "high-performance", antialias: true, stencil: false, alpha: true }}
+              dpr={[1, 2]}
             >
-              <ambientLight intensity={0.25} />
-              <directionalLight position={[5, 10, 5]} intensity={0.7} />
-              <pointLight position={[8, 4, 3]} intensity={1.2} color="#3A9FD8" />
-              <pointLight position={[-6, -4, -4]} intensity={0.5} color="#2174B1" />
+              <ambientLight intensity={0.08} />
+              <directionalLight position={[6, 10, 4]} intensity={1.0} color="#ddeeff" />
+              <pointLight position={[7, 3, 5]} intensity={3} color="#3A9FD8" />
+              <pointLight position={[-5, -2, -2]} intensity={1.2} color="#2174B1" />
+              <pointLight position={[0, -5, 4]} intensity={0.8} color="#FF9900" />
               <Suspense fallback={null}>
-                <Environment preset="city" />
-                <FloatingBlob />
+                <Environment preset="studio" />
+                <HeroScene />
               </Suspense>
               <StarField />
             </Canvas>
