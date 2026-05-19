@@ -1,40 +1,122 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, Suspense } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Float, MeshDistortMaterial, Environment } from "@react-three/drei";
+import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
+import * as THREE from "three";
 
 const PHONE = "tel:+353874099266";
 const PHONE_DISPLAY = "087 409 9266";
 const WA = "https://wa.me/353874099266";
 
-// Palette — Tech/SaaS (from website color code guide)
 const C = {
-  bg:      "#F5F8FF",
-  surface: "#EEF3FB",
-  border:  "#C8D8EF",
-  text:    "#0D1F3C",
-  muted:   "#5B7299",
+  bg:      "#04091A",
+  surface: "#070D1E",
+  panel:   "rgba(255,255,255,0.03)",
+  border:  "rgba(255,255,255,0.07)",
+  borderH: "rgba(255,255,255,0.18)",
+  text:    "#E8EFFF",
+  muted:   "#6B8BAE",
   accent:  "#2174B1",
-  accentL: "#3A8FD4",
+  accentL: "#3A9FD8",
   orange:  "#FF9900",
 };
+
+// ─── 3D Components ────────────────────────────────────────────────────────────
+
+function FloatingBlob() {
+  const meshRef = useRef();
+  const ring1Ref = useRef();
+  const ring2Ref = useRef();
+
+  useFrame((state) => {
+    if (!meshRef.current) return;
+    meshRef.current.rotation.x = THREE.MathUtils.lerp(
+      meshRef.current.rotation.x, state.mouse.y * -0.25, 0.04
+    );
+    meshRef.current.rotation.y = THREE.MathUtils.lerp(
+      meshRef.current.rotation.y, state.mouse.x * 0.4, 0.04
+    );
+    if (ring1Ref.current) {
+      ring1Ref.current.rotation.z += 0.003;
+      ring1Ref.current.rotation.x = Math.PI / 2.5 + Math.sin(state.clock.elapsedTime * 0.4) * 0.15;
+    }
+    if (ring2Ref.current) ring2Ref.current.rotation.z -= 0.002;
+  });
+
+  return (
+    <group position={[2.8, 0.2, 0]}>
+      <Float speed={1.4} rotationIntensity={0.3} floatIntensity={0.7}>
+        <mesh ref={meshRef}>
+          <icosahedronGeometry args={[1.5, 20]} />
+          <MeshDistortMaterial
+            color="#2174B1"
+            roughness={0.05}
+            metalness={0.9}
+            distort={0.28}
+            speed={1.5}
+            envMapIntensity={2}
+            emissive="#0D3A6A"
+            emissiveIntensity={0.4}
+          />
+        </mesh>
+      </Float>
+      <mesh ref={ring1Ref}>
+        <torusGeometry args={[2.25, 0.007, 2, 128]} />
+        <meshStandardMaterial color="#3A9FD8" transparent opacity={0.4} />
+      </mesh>
+      <mesh ref={ring2Ref} rotation={[Math.PI / 4, 0, Math.PI / 5]}>
+        <torusGeometry args={[2.9, 0.004, 2, 128]} />
+        <meshStandardMaterial color="#FF9900" transparent opacity={0.2} />
+      </mesh>
+      <mesh position={[-4, 2, -3]}>
+        <sphereGeometry args={[0.25, 16, 16]} />
+        <meshStandardMaterial color="#FF9900" emissive="#FF9900" emissiveIntensity={2} roughness={0} />
+      </mesh>
+    </group>
+  );
+}
+
+function StarField() {
+  const ref = useRef();
+  const positions = useMemo(() => {
+    const pos = new Float32Array(1800 * 3);
+    for (let i = 0; i < 1800; i++) {
+      pos[i * 3]     = (Math.random() - 0.5) * 28;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 28;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 28;
+    }
+    return pos;
+  }, []);
+
+  useFrame(() => { if (ref.current) ref.current.rotation.y += 0.00018; });
+
+  return (
+    <points ref={ref}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" count={1800} array={positions} itemSize={3} />
+      </bufferGeometry>
+      <pointsMaterial size={0.04} color="#8BA3C7" transparent opacity={0.4} sizeAttenuation />
+    </points>
+  );
+}
+
+// ─── Logo ─────────────────────────────────────────────────────────────────────
 
 const Logo = ({ scale = 1 }) => (
   <svg viewBox="0 0 220 65" width={220 * scale} height={65 * scale}>
     <path d="M 28,3 L 51,14 L 51,41 L 28,62 L 5,41 L 5,14 Z" fill="#2174B1" />
-    <path d="M 28,9 L 46,18 L 46,39 L 28,56 L 10,39 L 10,18 Z" fill="#FFFFFF" />
-    <text x="19" y="36" textAnchor="middle"
-      fontFamily="'Arial Black','DM Sans',system-ui,sans-serif"
-      fontWeight="900" fontSize="22" fill="#2174B1">d</text>
-    <text x="28" y="36" textAnchor="middle"
-      fontFamily="'Arial Black','DM Sans',system-ui,sans-serif"
-      fontWeight="900" fontSize="22" fill="#2174B1">g</text>
-    <text x="37" y="36" textAnchor="middle"
-      fontFamily="'Arial Black','DM Sans',system-ui,sans-serif"
-      fontWeight="900" fontSize="22" fill="#2174B1">d</text>
-    <line x1="67" y1="16" x2="67" y2="49" stroke={C.border} strokeWidth="1.2"/>
-    <text x="77" y="28" fontFamily="Georgia,serif" fontSize="8.5" fill={C.muted} letterSpacing="2.2">DIGITAL</text>
-    <text x="77" y="39" fontFamily="Georgia,serif" fontSize="8.5" fill={C.muted} letterSpacing="2.2">GROWTH</text>
+    <path d="M 28,9 L 46,18 L 46,39 L 28,56 L 10,39 L 10,18 Z" fill="#04091A" />
+    <text x="19" y="36" textAnchor="middle" fontFamily="'Arial Black',system-ui,sans-serif" fontWeight="900" fontSize="22" fill="#E8EFFF">d</text>
+    <text x="28" y="36" textAnchor="middle" fontFamily="'Arial Black',system-ui,sans-serif" fontWeight="900" fontSize="22" fill="#E8EFFF">g</text>
+    <text x="37" y="36" textAnchor="middle" fontFamily="'Arial Black',system-ui,sans-serif" fontWeight="900" fontSize="22" fill="#E8EFFF">d</text>
+    <line x1="67" y1="16" x2="67" y2="49" stroke="rgba(255,255,255,0.12)" strokeWidth="1.2"/>
+    <text x="77" y="28" fontFamily="Georgia,serif" fontSize="8.5" fill="rgba(255,255,255,0.4)" letterSpacing="2.2">DIGITAL</text>
+    <text x="77" y="39" fontFamily="Georgia,serif" fontSize="8.5" fill="rgba(255,255,255,0.4)" letterSpacing="2.2">GROWTH</text>
     <text x="77" y="50" fontFamily="Georgia,serif" fontWeight="700" fontSize="8.5" fill="#2174B1" letterSpacing="2.2">DESIGN</text>
   </svg>
 );
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
 
 const steps = [
   { n: "01", t: "We Reach Out", b: "We contact local businesses directly across Ireland. No agency middleman — just an honest conversation about what we can do for you." },
@@ -51,6 +133,8 @@ const faqs = [
   { q: "How fast can you turn it around?", a: "Most sites go live within 48 hours of us getting your information. We don't drag our feet." },
 ];
 
+// ─── App ──────────────────────────────────────────────────────────────────────
+
 export default function App() {
   const [openFaq, setOpenFaq] = useState(null);
   const [scrolled, setScrolled] = useState(false);
@@ -58,7 +142,7 @@ export default function App() {
   const refs = useRef({});
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
+    const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -77,8 +161,8 @@ export default function App() {
     ref: el => refs.current[id] = el,
     style: {
       opacity: vis[id] ? 1 : 0,
-      transform: vis[id] ? "none" : "translateY(20px)",
-      transition: `opacity .7s cubic-bezier(.4,0,.2,1) ${delay}s, transform .7s cubic-bezier(.4,0,.2,1) ${delay}s`
+      transform: vis[id] ? "none" : "translateY(24px)",
+      transition: `opacity .8s cubic-bezier(.4,0,.2,1) ${delay}s, transform .8s cubic-bezier(.4,0,.2,1) ${delay}s`
     }
   });
 
@@ -87,8 +171,9 @@ export default function App() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        ::selection { background: #2174B130; }
+        ::selection { background: #2174B140; }
         a { color: inherit; text-decoration: none; }
+        html { scroll-behavior: smooth; }
 
         .pill {
           display: inline-flex; align-items: center;
@@ -96,33 +181,75 @@ export default function App() {
           padding: 13px 28px; border-radius: 100px; border: none; cursor: pointer;
           transition: all .25s cubic-bezier(.4,0,.2,1);
         }
-        .pill-solid { background: ${C.accent}; color: ${C.bg}; }
-        .pill-solid:hover { background: ${C.text}; }
-        .pill-outline { background: transparent; color: ${C.text}; border: 1.5px solid ${C.border}; }
-        .pill-outline:hover { border-color: ${C.accent}; color: ${C.accent}; }
-
-        .step-line {
-          display: grid; grid-template-columns: 72px 1px 1fr;
-          gap: 0 32px; align-items: start; padding: 36px 0;
-          border-bottom: 1px solid ${C.border}; transition: all .2s;
+        .pill-primary {
+          background: linear-gradient(135deg, #2174B1 0%, #1560A0 100%);
+          color: #fff;
+          box-shadow: 0 0 28px rgba(33,116,177,0.4);
         }
-        .step-line:first-child { border-top: 1px solid ${C.border}; }
-        .step-line:hover { background: ${C.surface}; margin: 0 -28px; padding: 36px 28px; border-radius: 14px; border-color: transparent; }
+        .pill-primary:hover {
+          background: linear-gradient(135deg, #3A9FD8 0%, #2174B1 100%);
+          box-shadow: 0 0 44px rgba(33,116,177,0.6);
+          transform: translateY(-2px);
+        }
+        .pill-outline {
+          background: rgba(255,255,255,0.04);
+          color: ${C.text};
+          border: 1px solid rgba(255,255,255,0.12);
+          backdrop-filter: blur(10px);
+        }
+        .pill-outline:hover {
+          border-color: rgba(33,116,177,0.5);
+          background: rgba(33,116,177,0.08);
+          color: ${C.accentL};
+        }
 
-        .faq-row { padding: 22px 0; border-bottom: 1px solid ${C.border}; cursor: pointer; }
-        .faq-row:first-child { border-top: 1px solid ${C.border}; }
-        .faq-row:hover .fq { color: ${C.accent}; }
-        .fq { transition: color .2s; font-family: 'DM Serif Display', serif; font-size: 17px; }
+        .step-card {
+          padding: 40px;
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 22px;
+          background: rgba(255,255,255,0.02);
+          backdrop-filter: blur(12px);
+          transition: all .3s cubic-bezier(.4,0,.2,1);
+        }
+        .step-card:hover {
+          border-color: rgba(33,116,177,0.35);
+          background: rgba(33,116,177,0.05);
+          transform: translateY(-5px);
+          box-shadow: 0 24px 64px rgba(33,116,177,0.14);
+        }
 
-        .contact-card {
+        .faq-row {
+          padding: 24px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          cursor: pointer;
+          transition: all .2s;
+        }
+        .faq-row:first-child { border-top: 1px solid rgba(255,255,255,0.06); }
+        .faq-row:hover .fq { color: ${C.accentL}; }
+        .fq { transition: color .2s; font-family: 'DM Serif Display', serif; font-size: 18px; color: ${C.text}; }
+
+        .contact-link {
           display: flex; align-items: center; gap: 16px; padding: 22px 26px;
-          border: 1.5px solid ${C.border}; border-radius: 18px; background: ${C.surface};
+          border: 1px solid rgba(255,255,255,0.1); border-radius: 18px;
+          background: rgba(255,255,255,0.04); backdrop-filter: blur(10px);
           transition: all .25s cubic-bezier(.4,0,.2,1);
         }
-        .contact-card:hover { border-color: ${C.accent}; transform: translateY(-3px); box-shadow: 0 12px 40px ${C.accent}18; }
+        .contact-link:hover {
+          border-color: rgba(255,255,255,0.25);
+          background: rgba(255,255,255,0.08);
+          transform: translateY(-3px);
+          box-shadow: 0 14px 44px rgba(0,0,0,0.3);
+        }
 
-        @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+        .nav-link {
+          font-size: 12px; letter-spacing: 2px; color: ${C.muted}; font-weight: 500;
+          transition: color .2s;
+        }
+        .nav-link:hover { color: ${C.text}; }
+
+        @keyframes fadeUp { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:none; } }
         @keyframes ticker { from { transform:translateX(0); } to { transform:translateX(-33.33%); } }
+        @keyframes pulse { 0%,100% { opacity:.3; } 50% { opacity:.9; } }
       `}</style>
 
       {/* NAV */}
@@ -130,90 +257,119 @@ export default function App() {
         position: "fixed", inset: "0 0 auto 0", zIndex: 100,
         padding: "0 48px", height: 68,
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        background: scrolled ? "rgba(240,235,216,.94)" : "transparent",
-        borderBottom: scrolled ? `1px solid ${C.border}` : "1px solid transparent",
-        backdropFilter: scrolled ? "blur(20px)" : "none",
+        background: scrolled ? "rgba(4,9,26,0.9)" : "transparent",
+        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent",
+        backdropFilter: scrolled ? "blur(24px)" : "none",
         transition: "all .35s"
       }}>
         <Logo scale={.72} />
         <div style={{ display: "flex", gap: 36, alignItems: "center" }}>
-          <a href="#how" style={{ fontSize: 13, letterSpacing: 1.5, color: C.muted, fontWeight: 500 }}>HOW IT WORKS</a>
-          <a href="#faq" style={{ fontSize: 13, letterSpacing: 1.5, color: C.muted, fontWeight: 500 }}>FAQ</a>
-          <a href="#contact" className="pill pill-solid" style={{ fontSize: 12, padding: "9px 22px" }}>GET STARTED</a>
+          <a href="#how" className="nav-link">HOW IT WORKS</a>
+          <a href="#faq" className="nav-link">FAQ</a>
+          <a href="#contact" className="pill pill-primary" style={{ fontSize: 12, padding: "9px 22px" }}>GET STARTED</a>
         </div>
       </nav>
 
       {/* HERO */}
-      <section style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "120px 48px 80px", position: "relative", overflow: "hidden" }}>
-        {/* Subtle grid */}
-        <div style={{ position: "absolute", inset: 0, zIndex: 0, backgroundImage: `linear-gradient(${C.border}50 1px, transparent 1px), linear-gradient(90deg, ${C.border}50 1px, transparent 1px)`, backgroundSize: "64px 64px" }}/>
-        {/* Glow */}
-        <div style={{ position: "absolute", top: "20%", right: "5%", width: 500, height: 500, borderRadius: "50%", background: `radial-gradient(circle, ${C.accent}0A 0%, transparent 70%)`, zIndex: 0 }}/>
-        {/* Watermark */}
-        <div style={{ position: "absolute", right: -40, top: "50%", transform: "translateY(-52%)", fontFamily: "Georgia,serif", fontWeight: 900, fontSize: "clamp(200px,24vw,380px)", color: C.text, opacity: .04, userSelect: "none", letterSpacing: -16, zIndex: 0, lineHeight: 1 }}>DGD</div>
+      <section style={{ position: "relative", height: "100vh", overflow: "hidden", display: "flex", alignItems: "center" }}>
 
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 860 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28, opacity: 0, animation: "fadeUp .6s ease .1s forwards" }}>
-            <div style={{ width: 28, height: 1.5, background: C.accent }}/>
-            <span style={{ fontSize: 11, letterSpacing: 4, color: C.accent, fontWeight: 500 }}>DIGITAL GROWTH DESIGN</span>
+        {/* 3D Canvas */}
+        <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+          <Canvas
+            camera={{ position: [0, 0, 6], fov: 65 }}
+            gl={{ powerPreference: "high-performance", antialias: false, stencil: false }}
+            dpr={[1, 1.5]}
+          >
+            <ambientLight intensity={0.25} />
+            <directionalLight position={[5, 10, 5]} intensity={0.7} />
+            <pointLight position={[8, 4, 3]} intensity={1.2} color="#3A9FD8" />
+            <pointLight position={[-6, -4, -4]} intensity={0.5} color="#2174B1" />
+            <Suspense fallback={null}>
+              <Environment preset="city" />
+              <FloatingBlob />
+            </Suspense>
+            <StarField />
+            <EffectComposer>
+              <Bloom luminanceThreshold={0.4} luminanceSmoothing={0.9} intensity={1.4} />
+              <Vignette eskil={false} offset={0.15} darkness={1.3} />
+            </EffectComposer>
+          </Canvas>
+        </div>
+
+        {/* Blue glow behind 3D */}
+        <div style={{ position: "absolute", right: "8%", top: "50%", transform: "translateY(-50%)", width: 520, height: 520, background: "radial-gradient(circle, rgba(33,116,177,0.1) 0%, transparent 70%)", pointerEvents: "none", zIndex: 1 }} />
+
+        {/* Subtle grid */}
+        <div style={{ position: "absolute", inset: 0, zIndex: 1, backgroundImage: `linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px)`, backgroundSize: "72px 72px", pointerEvents: "none" }} />
+
+        {/* Hero content */}
+        <div style={{ position: "relative", zIndex: 2, padding: "0 48px", maxWidth: 680 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 32, opacity: 0, animation: "fadeUp .6s ease .1s forwards" }}>
+            <div style={{ width: 32, height: 1.5, background: `linear-gradient(90deg, ${C.accent}, transparent)` }} />
+            <span style={{ fontSize: 10, letterSpacing: 4, color: C.accent, fontWeight: 500 }}>DIGITAL GROWTH DESIGN</span>
           </div>
 
-          <h1 style={{ fontFamily: "'DM Serif Display',serif", fontWeight: 900, lineHeight: 1.04, letterSpacing: "-2px", marginBottom: 28, opacity: 0, animation: "fadeUp .7s ease .18s forwards" }}>
-            <span style={{ display: "block", fontSize: "clamp(48px,7.5vw,100px)", color: C.muted, fontWeight: 400, fontStyle: "italic" }}>Websites that</span>
-            <span style={{ display: "block", fontSize: "clamp(48px,7.5vw,100px)" }}>work for your</span>
-            <span style={{ display: "block", fontSize: "clamp(48px,7.5vw,100px)", color: C.accent, fontStyle: "italic" }}>business.</span>
+          <h1 style={{ fontFamily: "'DM Serif Display',serif", lineHeight: 1.04, letterSpacing: "-2px", marginBottom: 28, opacity: 0, animation: "fadeUp .7s ease .2s forwards" }}>
+            <span style={{ display: "block", fontSize: "clamp(44px,6.5vw,86px)", color: C.muted, fontWeight: 400, fontStyle: "italic" }}>Websites that</span>
+            <span style={{ display: "block", fontSize: "clamp(44px,6.5vw,86px)", color: C.text }}>get your business</span>
+            <span style={{ display: "block", fontSize: "clamp(44px,6.5vw,86px)", color: C.accent, fontStyle: "italic" }}>results.</span>
           </h1>
 
-          <p style={{ fontSize: 18, color: C.muted, lineHeight: 1.8, maxWidth: 480, marginBottom: 44, fontWeight: 300, opacity: 0, animation: "fadeUp .7s ease .3s forwards" }}>
+          <p style={{ fontSize: 17, color: C.muted, lineHeight: 1.8, maxWidth: 440, marginBottom: 44, fontWeight: 300, opacity: 0, animation: "fadeUp .7s ease .34s forwards" }}>
             We work with Irish small businesses to get them online — properly. From first call to live site in under 48 hours.
           </p>
 
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 60, opacity: 0, animation: "fadeUp .7s ease .42s forwards" }}>
-            <a href="#contact" className="pill pill-solid" style={{ fontSize: 13 }}>Get Your Website</a>
-            <a href="#how" className="pill pill-outline" style={{ fontSize: 13 }}>See How It Works</a>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 56, opacity: 0, animation: "fadeUp .7s ease .46s forwards" }}>
+            <a href="#contact" className="pill pill-primary" style={{ fontSize: 14, padding: "14px 36px" }}>Get Your Website</a>
+            <a href="#how" className="pill pill-outline" style={{ fontSize: 14 }}>See How It Works</a>
           </div>
 
-          <div style={{ display: "flex", gap: 36, flexWrap: "wrap", opacity: 0, animation: "fadeUp .7s ease .52s forwards" }}>
+          <div style={{ display: "flex", gap: 32, flexWrap: "wrap", opacity: 0, animation: "fadeUp .7s ease .56s forwards" }}>
             {["Simple process", "Live in 48 hours", "Local Irish team"].map(t => (
               <div key={t} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.accent }}/>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent, boxShadow: `0 0 8px ${C.accent}` }} />
                 <span style={{ fontSize: 13, color: C.muted }}>{t}</span>
               </div>
             ))}
           </div>
         </div>
+
+        {/* Scroll indicator */}
+        <div style={{ position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, opacity: 0, animation: "fadeUp .6s ease 1.2s forwards" }}>
+          <span style={{ fontSize: 9, letterSpacing: 3, color: C.muted }}>SCROLL</span>
+          <div style={{ width: 1, height: 40, background: `linear-gradient(${C.accent}, transparent)`, animation: "pulse 2s ease infinite" }} />
+        </div>
       </section>
 
       {/* TICKER */}
-      <div style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: "14px 0", overflow: "hidden", background: C.surface }}>
-        <div style={{ display: "flex", gap: 60, whiteSpace: "nowrap", animation: "ticker 24s linear infinite" }}>
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "16px 0", overflow: "hidden", background: "rgba(255,255,255,0.012)" }}>
+        <div style={{ display: "flex", gap: 72, whiteSpace: "nowrap", animation: "ticker 28s linear infinite" }}>
           {[...Array(3)].flatMap(() => ["Cafés","Barbers","Plumbers","Physios","Restaurants","Electricians","Salons","Solicitors","Accountants","Gyms","Florists","Beauticians"]).map((t, i) => (
-            <span key={i} style={{ fontSize: 10, letterSpacing: 4, color: C.border, fontWeight: 500 }}>{t.toUpperCase()}</span>
+            <span key={i} style={{ fontSize: 9, letterSpacing: 4.5, color: "rgba(255,255,255,0.16)", fontWeight: 500 }}>{t.toUpperCase()}</span>
           ))}
         </div>
       </div>
 
       {/* HOW IT WORKS */}
-      <section id="how" style={{ padding: "120px 48px" }}>
-        <div style={{ maxWidth: 960, margin: "0 auto" }}>
-          <div {...r("how-h")} style={{ ...r("how-h").style, marginBottom: 56 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-              <div style={{ width: 20, height: 1.5, background: C.accent }}/>
-              <span style={{ fontSize: 10, letterSpacing: 4, color: C.accent }}>THE PROCESS</span>
+      <section id="how" style={{ padding: "130px 48px" }}>
+        <div style={{ maxWidth: 1020, margin: "0 auto" }}>
+          <div {...r("how-h")} style={{ ...r("how-h").style, marginBottom: 64 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+              <div style={{ width: 24, height: 1.5, background: `linear-gradient(90deg, ${C.accent}, transparent)` }} />
+              <span style={{ fontSize: 9, letterSpacing: 4, color: C.accent }}>THE PROCESS</span>
             </div>
-            <h2 style={{ fontFamily: "'DM Serif Display',serif", fontSize: "clamp(32px,4.5vw,56px)", fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.08 }}>
-              First call to live site.<br/><span style={{ color: C.muted, fontWeight: 400, fontStyle: "italic" }}>Under 48 hours.</span>
+            <h2 style={{ fontFamily: "'DM Serif Display',serif", fontSize: "clamp(32px,4.5vw,58px)", fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.08 }}>
+              First call to live site.<br /><span style={{ color: C.muted, fontWeight: 400, fontStyle: "italic" }}>Under 48 hours.</span>
             </h2>
           </div>
-          <div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
             {steps.map((s, i) => (
-              <div key={i} className="step-line" {...r(`s${i}`, i * .1)} style={{ ...r(`s${i}`, i * .1).style }}>
-                <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 11, color: C.accent, letterSpacing: 3, paddingTop: 3 }}>{s.n}</div>
-                <div style={{ width: 1, background: C.border, alignSelf: "stretch", marginTop: 4 }}/>
-                <div>
-                  <h3 style={{ fontFamily: "'DM Serif Display',serif", fontSize: 20, fontWeight: 700, marginBottom: 10, letterSpacing: -.3 }}>{s.t}</h3>
-                  <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, maxWidth: 520 }}>{s.b}</p>
-                </div>
+              <div key={i} className="step-card" {...r(`s${i}`, i * .09)} style={{ ...r(`s${i}`, i * .09).style }}>
+                <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 12, color: C.accent, letterSpacing: 3, marginBottom: 20 }}>{s.n}</div>
+                <div style={{ width: 28, height: 1, background: `linear-gradient(90deg, ${C.accent}60, transparent)`, marginBottom: 20 }} />
+                <h3 style={{ fontFamily: "'DM Serif Display',serif", fontSize: 21, fontWeight: 700, marginBottom: 12, letterSpacing: -.3, color: C.text }}>{s.t}</h3>
+                <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85 }}>{s.b}</p>
               </div>
             ))}
           </div>
@@ -221,52 +377,55 @@ export default function App() {
       </section>
 
       {/* CONTACT */}
-      <section id="contact" style={{ padding: "0 48px 120px" }}>
-        <div style={{ maxWidth: 960, margin: "0 auto" }}>
+      <section id="contact" style={{ padding: "0 48px 130px" }}>
+        <div style={{ maxWidth: 1020, margin: "0 auto" }}>
           <div {...r("c")} style={{
             ...r("c").style,
-            background: C.accent,
-            borderRadius: 28, padding: "64px 60px",
-            display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 52
+            background: "linear-gradient(135deg, #0C2340 0%, #091A30 50%, #0C2040 100%)",
+            border: "1px solid rgba(33,116,177,0.22)",
+            borderRadius: 28, padding: "72px 64px",
+            display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 52,
+            position: "relative", overflow: "hidden",
+            boxShadow: "0 40px 120px rgba(33,116,177,0.1)"
           }}>
-            <div style={{ flex: 1, minWidth: 260 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
-                <div style={{ width: 18, height: 1, background: C.bg, opacity: .5 }}/>
-                <span style={{ fontSize: 10, letterSpacing: 4, color: C.bg, opacity: .7 }}>GET IN TOUCH</span>
+            <div style={{ position: "absolute", top: -100, right: -80, width: 380, height: 380, background: "radial-gradient(circle, rgba(33,116,177,0.14) 0%, transparent 70%)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", bottom: -80, left: -60, width: 280, height: 280, background: "radial-gradient(circle, rgba(255,153,0,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+            <div style={{ flex: 1, minWidth: 260, position: "relative" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+                <div style={{ width: 20, height: 1, background: "rgba(255,255,255,0.25)" }} />
+                <span style={{ fontSize: 9, letterSpacing: 4, color: "rgba(255,255,255,0.45)" }}>GET IN TOUCH</span>
               </div>
-              <h2 style={{ fontFamily: "'DM Serif Display',serif", fontSize: "clamp(26px,3.5vw,44px)", fontWeight: 900, letterSpacing: -1, lineHeight: 1.1, marginBottom: 18, color: C.bg }}>
-                Ready to get<br/>your business online?
+              <h2 style={{ fontFamily: "'DM Serif Display',serif", fontSize: "clamp(26px,3.5vw,46px)", fontWeight: 900, letterSpacing: -1, lineHeight: 1.1, marginBottom: 18, color: "#E8EFFF" }}>
+                Ready to get<br />your business online?
               </h2>
-              <p style={{ fontSize: 14, color: C.bg, opacity: .7, lineHeight: 1.85, maxWidth: 360 }}>
-                Heard about us through a friend, spotted our work on another site, or just found us yourself — give us a call or send a WhatsApp. We'll take it from there.
+              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.9, maxWidth: 360 }}>
+                Heard about us through a friend, spotted our work, or just found us yourself — give us a call or send a WhatsApp. We'll take it from there.
               </p>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 270 }}>
-              <a href={PHONE} style={{ display: "flex", alignItems: "center", gap: 16, padding: "22px 26px", border: `1.5px solid ${C.bg}30`, borderRadius: 18, background: `${C.bg}15`, transition: "all .25s", textDecoration: "none" }}
-                onMouseOver={e => { e.currentTarget.style.background = `${C.bg}25`; e.currentTarget.style.borderColor = `${C.bg}60`; }}
-                onMouseOut={e => { e.currentTarget.style.background = `${C.bg}15`; e.currentTarget.style.borderColor = `${C.bg}30`; }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: `${C.bg}20`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.bg} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.63A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 280, position: "relative" }}>
+              <a href={PHONE} className="contact-link">
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(33,116,177,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.63A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
                   </svg>
                 </div>
                 <div>
-                  <div style={{ fontSize: 9, letterSpacing: 2.5, color: C.bg, opacity: .6, marginBottom: 4 }}>CALL US</div>
-                  <div style={{ fontSize: 16, fontFamily: "'DM Serif Display',serif", fontWeight: 700, color: C.bg }}>{PHONE_DISPLAY}</div>
+                  <div style={{ fontSize: 9, letterSpacing: 2.5, color: "rgba(255,255,255,0.4)", marginBottom: 4 }}>CALL US</div>
+                  <div style={{ fontSize: 16, fontFamily: "'DM Serif Display',serif", fontWeight: 700, color: "#E8EFFF" }}>{PHONE_DISPLAY}</div>
                 </div>
               </a>
-              <a href={WA} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 16, padding: "22px 26px", border: `1.5px solid ${C.bg}30`, borderRadius: 18, background: `${C.bg}15`, transition: "all .25s", textDecoration: "none" }}
-                onMouseOver={e => { e.currentTarget.style.background = `${C.bg}25`; e.currentTarget.style.borderColor = `${C.bg}60`; }}
-                onMouseOut={e => { e.currentTarget.style.background = `${C.bg}15`; e.currentTarget.style.borderColor = `${C.bg}30`; }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: `${C.bg}20`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill={C.bg}>
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-                    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.851L0 24l6.341-1.508A11.955 11.955 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.812 9.812 0 01-5.002-1.366l-.359-.214-3.724.886.924-3.638-.234-.374A9.818 9.818 0 012.182 12C2.182 6.573 6.573 2.182 12 2.182S21.818 6.573 21.818 12 17.427 21.818 12 21.818z"/>
+              <a href={WA} target="_blank" rel="noreferrer" className="contact-link">
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(37,211,102,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.851L0 24l6.341-1.508A11.955 11.955 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.812 9.812 0 01-5.002-1.366l-.359-.214-3.724.886.924-3.638-.234-.374A9.818 9.818 0 012.182 12C2.182 6.573 6.573 2.182 12 2.182S21.818 6.573 21.818 12 17.427 21.818 12 21.818z" />
                   </svg>
                 </div>
                 <div>
-                  <div style={{ fontSize: 9, letterSpacing: 2.5, color: C.bg, opacity: .6, marginBottom: 4 }}>WHATSAPP</div>
-                  <div style={{ fontSize: 16, fontFamily: "'DM Serif Display',serif", fontWeight: 700, color: C.bg }}>Message directly</div>
+                  <div style={{ fontSize: 9, letterSpacing: 2.5, color: "rgba(255,255,255,0.4)", marginBottom: 4 }}>WHATSAPP</div>
+                  <div style={{ fontSize: 16, fontFamily: "'DM Serif Display',serif", fontWeight: 700, color: "#E8EFFF" }}>Message directly</div>
                 </div>
               </a>
             </div>
@@ -275,23 +434,23 @@ export default function App() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" style={{ padding: "0 48px 120px" }}>
+      <section id="faq" style={{ padding: "0 48px 130px" }}>
         <div style={{ maxWidth: 720, margin: "0 auto" }}>
-          <div {...r("fq-h")} style={{ ...r("fq-h").style, marginBottom: 48 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-              <div style={{ width: 18, height: 1.5, background: C.accent }}/>
-              <span style={{ fontSize: 10, letterSpacing: 4, color: C.accent }}>FAQ</span>
+          <div {...r("fq-h")} style={{ ...r("fq-h").style, marginBottom: 52 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+              <div style={{ width: 20, height: 1.5, background: `linear-gradient(90deg, ${C.accent}, transparent)` }} />
+              <span style={{ fontSize: 9, letterSpacing: 4, color: C.accent }}>FAQ</span>
             </div>
-            <h2 style={{ fontFamily: "'DM Serif Display',serif", fontSize: "clamp(26px,3.5vw,44px)", fontWeight: 900, letterSpacing: -1 }}>Questions we get asked.</h2>
+            <h2 style={{ fontFamily: "'DM Serif Display',serif", fontSize: "clamp(28px,4vw,48px)", fontWeight: 900, letterSpacing: -1.2 }}>Questions we get asked.</h2>
           </div>
           <div>
             {faqs.map((f, i) => (
-              <div key={i} className="faq-row" onClick={() => setOpenFaq(openFaq === i ? null : i)} {...r(`f${i}`, i * .07)} style={{ ...r(`f${i}`, i * .07).style }}>
+              <div key={i} className="faq-row" onClick={() => setOpenFaq(openFaq === i ? null : i)} {...r(`f${i}`, i * .06)} style={{ ...r(`f${i}`, i * .06).style }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span className="fq">{f.q}</span>
-                  <span style={{ color: C.accent, fontSize: 22, fontWeight: 300, marginLeft: 24, flexShrink: 0, transition: "transform .2s", transform: openFaq === i ? "rotate(45deg)" : "none" }}>+</span>
+                  <span style={{ color: C.accent, fontSize: 22, fontWeight: 300, marginLeft: 24, flexShrink: 0, transition: "transform .25s", transform: openFaq === i ? "rotate(45deg)" : "none" }}>+</span>
                 </div>
-                {openFaq === i && <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, marginTop: 14 }}>{f.a}</p>}
+                {openFaq === i && <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.9, marginTop: 16 }}>{f.a}</p>}
               </div>
             ))}
           </div>
@@ -299,22 +458,22 @@ export default function App() {
       </section>
 
       {/* BOTTOM CTA */}
-      <section style={{ padding: "80px 48px 100px", borderTop: `1px solid ${C.border}` }}>
+      <section style={{ padding: "80px 48px 110px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
         <div {...r("cta")} style={{ ...r("cta").style, maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
-          <h2 style={{ fontFamily: "'DM Serif Display',serif", fontSize: "clamp(32px,5vw,64px)", fontWeight: 900, letterSpacing: -2, lineHeight: 1.05, marginBottom: 22 }}>
-            Let's get you<br/><span style={{ fontStyle: "italic", color: C.accent }}>online.</span>
+          <h2 style={{ fontFamily: "'DM Serif Display',serif", fontSize: "clamp(36px,5vw,68px)", fontWeight: 900, letterSpacing: -2, lineHeight: 1.05, marginBottom: 24 }}>
+            Let's get you<br /><span style={{ fontStyle: "italic", color: C.accent }}>online.</span>
           </h2>
-          <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.8, marginBottom: 40 }}>Get in touch and we'll have your site live within 48 hours.</p>
-          <a href="#contact" className="pill pill-solid" style={{ fontSize: 14, padding: "15px 40px" }}>Get Your Website</a>
+          <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.8, marginBottom: 44 }}>Get in touch and we'll have your site live within 48 hours.</p>
+          <a href="#contact" className="pill pill-primary" style={{ fontSize: 14, padding: "15px 44px" }}>Get Your Website</a>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer style={{ padding: "32px 48px", borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20 }}>
-        <Logo scale={.68} />
-        <div style={{ display: "flex", gap: 32 }}>
-          {["Digital Growth Design", "dgd.ie", "© 2025"].map(t => (
-            <span key={t} style={{ fontSize: 10, color: C.border, letterSpacing: 1.5 }}>{t.toUpperCase()}</span>
+      <footer style={{ padding: "28px 48px", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20 }}>
+        <Logo scale={.65} />
+        <div style={{ display: "flex", gap: 28 }}>
+          {["Digital Growth Design", "dgd.ie", "© 2026"].map(t => (
+            <span key={t} style={{ fontSize: 10, color: "rgba(255,255,255,0.18)", letterSpacing: 1.5 }}>{t.toUpperCase()}</span>
           ))}
         </div>
       </footer>
