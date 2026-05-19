@@ -1,8 +1,13 @@
-import { useState, useEffect, useRef, useMemo, Suspense } from "react";
+import { useState, useEffect, useRef, useMemo, Suspense, Component } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, MeshDistortMaterial, Environment } from "@react-three/drei";
-import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
+
+class ErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { error: false }; }
+  static getDerivedStateFromError() { return { error: true }; }
+  render() { return this.state.error ? (this.props.fallback ?? null) : this.props.children; }
+}
 
 const PHONE = "tel:+353874099266";
 const PHONE_DISPLAY = "087 409 9266";
@@ -274,27 +279,25 @@ export default function App() {
       <section style={{ position: "relative", height: "100vh", overflow: "hidden", display: "flex", alignItems: "center" }}>
 
         {/* 3D Canvas */}
-        <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
-          <Canvas
-            camera={{ position: [0, 0, 6], fov: 65 }}
-            gl={{ powerPreference: "high-performance", antialias: false, stencil: false }}
-            dpr={[1, 1.5]}
-          >
-            <ambientLight intensity={0.25} />
-            <directionalLight position={[5, 10, 5]} intensity={0.7} />
-            <pointLight position={[8, 4, 3]} intensity={1.2} color="#3A9FD8" />
-            <pointLight position={[-6, -4, -4]} intensity={0.5} color="#2174B1" />
-            <Suspense fallback={null}>
-              <Environment preset="city" />
-              <FloatingBlob />
-            </Suspense>
-            <StarField />
-            <EffectComposer>
-              <Bloom luminanceThreshold={0.4} luminanceSmoothing={0.9} intensity={1.4} />
-              <Vignette eskil={false} offset={0.15} darkness={1.3} />
-            </EffectComposer>
-          </Canvas>
-        </div>
+        <ErrorBoundary fallback={null}>
+          <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+            <Canvas
+              camera={{ position: [0, 0, 6], fov: 65 }}
+              gl={{ powerPreference: "high-performance", antialias: false, stencil: false, alpha: true }}
+              dpr={[1, 1.5]}
+            >
+              <ambientLight intensity={0.25} />
+              <directionalLight position={[5, 10, 5]} intensity={0.7} />
+              <pointLight position={[8, 4, 3]} intensity={1.2} color="#3A9FD8" />
+              <pointLight position={[-6, -4, -4]} intensity={0.5} color="#2174B1" />
+              <Suspense fallback={null}>
+                <Environment preset="city" />
+                <FloatingBlob />
+              </Suspense>
+              <StarField />
+            </Canvas>
+          </div>
+        </ErrorBoundary>
 
         {/* Blue glow behind 3D */}
         <div style={{ position: "absolute", right: "8%", top: "50%", transform: "translateY(-50%)", width: 520, height: 520, background: "radial-gradient(circle, rgba(33,116,177,0.1) 0%, transparent 70%)", pointerEvents: "none", zIndex: 1 }} />
