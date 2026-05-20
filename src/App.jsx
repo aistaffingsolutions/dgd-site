@@ -149,9 +149,9 @@ const Logo = ({ scale = 1 }) => (
     <text x="28" y="36" textAnchor="middle" fontFamily="'Arial Black',system-ui,sans-serif" fontWeight="900" fontSize="22" fill="#E8EFFF">g</text>
     <text x="37" y="36" textAnchor="middle" fontFamily="'Arial Black',system-ui,sans-serif" fontWeight="900" fontSize="22" fill="#E8EFFF">d</text>
     <line x1="67" y1="16" x2="67" y2="49" stroke="rgba(255,255,255,0.12)" strokeWidth="1.2"/>
-    <text x="77" y="28" fontFamily="Georgia,serif" fontSize="8.5" fill="rgba(255,255,255,0.4)" letterSpacing="2.2">DIGITAL</text>
-    <text x="77" y="39" fontFamily="Georgia,serif" fontSize="8.5" fill="rgba(255,255,255,0.4)" letterSpacing="2.2">GROWTH</text>
-    <text x="77" y="50" fontFamily="Georgia,serif" fontWeight="700" fontSize="8.5" fill="#2174B1" letterSpacing="2.2">DESIGN</text>
+    <text x="77" y="28" fontFamily="Georgia,serif" fontSize="8.5" fill="rgba(255,255,255,0.4)" letterSpacing="2.2">DREAM</text>
+    <text x="77" y="39" fontFamily="Georgia,serif" fontSize="8.5" fill="rgba(255,255,255,0.4)" letterSpacing="2.2">GATEWAY</text>
+    <text x="77" y="50" fontFamily="Georgia,serif" fontWeight="700" fontSize="8.5" fill="#2174B1" letterSpacing="2.2">DONE</text>
   </svg>
 );
 
@@ -343,7 +343,7 @@ export default function App() {
         <div style={{ position: "relative", zIndex: 2, padding: "0 48px", maxWidth: 680 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 32, opacity: 0, animation: "fadeUp .6s ease .1s forwards" }}>
             <div style={{ width: 32, height: 1.5, background: `linear-gradient(90deg, ${C.accent}, transparent)` }} />
-            <span style={{ fontSize: 10, letterSpacing: 4, color: C.accent, fontWeight: 500 }}>DIGITAL GROWTH DESIGN</span>
+            <span style={{ fontSize: 10, letterSpacing: 4, color: C.accent, fontWeight: 500 }}>DREAM GATEWAY DONE</span>
           </div>
 
           <h1 style={{ fontFamily: "'DM Serif Display',serif", lineHeight: 1.04, letterSpacing: "-2px", marginBottom: 28, opacity: 0, animation: "fadeUp .7s ease .2s forwards" }}>
@@ -509,7 +509,7 @@ export default function App() {
       <footer style={{ padding: "28px 48px", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20 }}>
         <Logo scale={.65} />
         <div style={{ display: "flex", gap: 28 }}>
-          {["Digital Growth Design", "dgd.ie", "© 2026"].map(t => (
+          {["Dream Gateway Done", "dgd.ie", "© 2026"].map(t => (
             <span key={t} style={{ fontSize: 10, color: "rgba(255,255,255,0.18)", letterSpacing: 1.5 }}>{t.toUpperCase()}</span>
           ))}
         </div>
