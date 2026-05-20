@@ -1,10 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Hexagon background -->
-  <polygon points="32,2 58,16 58,48 32,62 6,48 6,16" fill="#2174B1"/>
-  <!-- Inner dark hexagon -->
-  <polygon points="32,9 52,20 52,44 32,55 12,44 12,20" fill="#04091A"/>
-  <!-- Letters dgd -->
-  <text x="16" y="40" font-family="Arial Black, system-ui, sans-serif" font-weight="900" font-size="24" fill="#E8EFFF">d</text>
-  <text x="28" y="40" font-family="Arial Black, system-ui, sans-serif" font-weight="900" font-size="24" fill="#E8EFFF">g</text>
-  <text x="40" y="40" font-family="Arial Black, system-ui, sans-serif" font-weight="900" font-size="24" fill="#E8EFFF">d</text>
+  <path d="M 14,2 L 50,2 L 62,14 L 62,50 L 50,62 L 14,62 L 2,50 L 2,14 Z" fill="#2174B1"/>
+  <path d="M 17,6 L 47,6 L 57,16 L 57,48 L 47,58 L 17,58 L 7,48 L 7,16 Z" fill="#04091A"/>
+  <text x="32" y="43" text-anchor="middle" font-family="Arial Black, system-ui, sans-serif" font-weight="900" font-size="21" fill="#E8EFFF" letter-spacing="1">dgd</text>
 </svg>
