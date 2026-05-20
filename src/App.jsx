@@ -140,19 +140,17 @@ function StarField() {
 }
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────
+// Always use the official asset — never recreate inline per branding rules
 
-const Logo = ({ scale = 1 }) => (
-  <svg viewBox="0 0 220 65" width={220 * scale} height={65 * scale}>
-    <path d="M 28,3 L 51,14 L 51,41 L 28,62 L 5,41 L 5,14 Z" fill="#2174B1" />
-    <path d="M 28,9 L 46,18 L 46,39 L 28,56 L 10,39 L 10,18 Z" fill="#04091A" />
-    <text x="19" y="36" textAnchor="middle" fontFamily="'Arial Black',system-ui,sans-serif" fontWeight="900" fontSize="22" fill="#E8EFFF">d</text>
-    <text x="28" y="36" textAnchor="middle" fontFamily="'Arial Black',system-ui,sans-serif" fontWeight="900" fontSize="22" fill="#E8EFFF">g</text>
-    <text x="37" y="36" textAnchor="middle" fontFamily="'Arial Black',system-ui,sans-serif" fontWeight="900" fontSize="22" fill="#E8EFFF">d</text>
-    <line x1="67" y1="16" x2="67" y2="49" stroke="rgba(255,255,255,0.12)" strokeWidth="1.2"/>
-    <text x="77" y="28" fontFamily="Georgia,serif" fontSize="8.5" fill="rgba(255,255,255,0.4)" letterSpacing="2.2">DREAM</text>
-    <text x="77" y="39" fontFamily="Georgia,serif" fontSize="8.5" fill="rgba(255,255,255,0.4)" letterSpacing="2.2">GATEWAY</text>
-    <text x="77" y="50" fontFamily="Georgia,serif" fontWeight="700" fontSize="8.5" fill="#2174B1" letterSpacing="2.2">DONE</text>
-  </svg>
+const Logo = ({ height = 42 }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <img src="/branding/dgd-logo-system.svg" alt="DGD" height={height} style={{ display: "block" }} />
+    <div style={{ lineHeight: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+      <span style={{ fontSize: 7.5, letterSpacing: 2.2, color: "rgba(255,255,255,0.4)", fontFamily: "Georgia,serif" }}>DREAM</span>
+      <span style={{ fontSize: 7.5, letterSpacing: 2.2, color: "rgba(255,255,255,0.4)", fontFamily: "Georgia,serif" }}>GATEWAY</span>
+      <span style={{ fontSize: 7.5, letterSpacing: 2.2, color: "#2563EB", fontFamily: "Georgia,serif", fontWeight: 700 }}>DONE</span>
+    </div>
+  </div>
 );
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -301,7 +299,7 @@ export default function App() {
         backdropFilter: scrolled ? "blur(24px)" : "none",
         transition: "all .35s"
       }}>
-        <Logo scale={.72} />
+        <Logo height={42} />
         <div style={{ display: "flex", gap: 36, alignItems: "center" }}>
           <a href="#how" className="nav-link">HOW IT WORKS</a>
           <a href="#faq" className="nav-link">FAQ</a>
@@ -507,7 +505,7 @@ export default function App() {
 
       {/* FOOTER */}
       <footer style={{ padding: "28px 48px", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20 }}>
-        <Logo scale={.65} />
+        <Logo height={36} />
         <div style={{ display: "flex", gap: 28 }}>
           {["Dream Gateway Done", "dgd.ie", "© 2026"].map(t => (
             <span key={t} style={{ fontSize: 10, color: "rgba(255,255,255,0.18)", letterSpacing: 1.5 }}>{t.toUpperCase()}</span>

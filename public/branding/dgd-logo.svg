@@ -1,0 +1,22 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M256 40L430 110V250C430 360 356 440 256 472C156 440 82 360 82 250V110L256 40Z"
+        stroke="#2563EB" stroke-width="20" fill="none"/>
+
+  <text x="128" y="305"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="150"
+        font-weight="700"
+        fill="#F8FAFC">d</text>
+
+  <text x="195" y="340"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="180"
+        font-weight="700"
+        fill="#2563EB">g</text>
+
+  <text x="315" y="305"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="150"
+        font-weight="700"
+        fill="#F8FAFC">d</text>
+</svg>
