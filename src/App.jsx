@@ -145,7 +145,9 @@ const Logo = ({ scale = 1 }) => (
   <svg viewBox="0 0 220 65" width={220 * scale} height={65 * scale}>
     <path d="M 28,3 L 51,14 L 51,41 L 28,62 L 5,41 L 5,14 Z" fill="#2174B1" />
     <path d="M 28,9 L 46,18 L 46,39 L 28,56 L 10,39 L 10,18 Z" fill="#04091A" />
-    <text x="28" y="38" textAnchor="middle" fontFamily="'Arial Black',system-ui,sans-serif" fontWeight="900" fontSize="18" fill="#E8EFFF" letterSpacing="2">dgd</text>
+    <text x="19" y="36" textAnchor="middle" fontFamily="'Arial Black',system-ui,sans-serif" fontWeight="900" fontSize="22" fill="#E8EFFF">d</text>
+    <text x="28" y="36" textAnchor="middle" fontFamily="'Arial Black',system-ui,sans-serif" fontWeight="900" fontSize="22" fill="#E8EFFF">g</text>
+    <text x="37" y="36" textAnchor="middle" fontFamily="'Arial Black',system-ui,sans-serif" fontWeight="900" fontSize="22" fill="#E8EFFF">d</text>
     <line x1="67" y1="16" x2="67" y2="49" stroke="rgba(255,255,255,0.12)" strokeWidth="1.2"/>
     <text x="77" y="28" fontFamily="Georgia,serif" fontSize="8.5" fill="rgba(255,255,255,0.4)" letterSpacing="2.2">DREAM</text>
     <text x="77" y="39" fontFamily="Georgia,serif" fontSize="8.5" fill="rgba(255,255,255,0.4)" letterSpacing="2.2">GATEWAY</text>
