@@ -1,14 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <style>
     .d-letters { fill: var(--d-color, #FFFFFF); }
-    .g-shield { fill: var(--g-color, #2563EB); stroke: var(--g-color, #2563EB); }
+    .g-letter  { fill: var(--g-color, #2563EB); }
+    .shield    { fill: none; stroke: var(--g-color, #2563EB); stroke-width: 18; }
   </style>
 
-  <!-- Shield -->
-  <path class="g-shield"
-        d="M256 40L430 110V250C430 360 356 440 256 472C156 440 82 360 82 250V110L256 40Z"
-        fill="none"
-        stroke-width="18"/>
+  <!-- Shield — stroke only, no fill -->
+  <path class="shield"
+        d="M256 40L430 110V250C430 360 356 440 256 472C156 440 82 360 82 250V110L256 40Z"/>
 
   <!-- Left D -->
   <text x="120" y="305"
@@ -19,11 +18,10 @@
 
   <!-- G -->
   <text x="195" y="340"
-        class="g-shield"
+        class="g-letter"
         font-family="Arial, Helvetica, sans-serif"
         font-size="180"
-        font-weight="700"
-        stroke="none">g</text>
+        font-weight="700">g</text>
 
   <!-- Right D -->
   <text x="315" y="305"
